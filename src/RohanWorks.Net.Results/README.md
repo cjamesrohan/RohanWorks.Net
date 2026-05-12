@@ -2,6 +2,14 @@
 
 `Result<T>` pattern for ASP.NET Core APIs. Return exceptions instead of throwing them — with a fluent builder that maps results directly to HTTP responses.
 
+## Why
+
+Throwing an exception in .NET is expensive — stack unwinding, stack trace capture, allocations. When "not found" or "validation failed" are expected outcomes on a hot path, you're paying that cost on every call even though nothing is actually exceptional.
+
+`Result<T>` lets you return an exception as a value instead of throwing it. `return new NotFoundException(...)` is a struct assignment — no stack capture, no heap allocation for the failure path. The caller handles it through the same `HandleException` chain regardless of whether the exception was returned or thrown, so existing code that does throw still works without modification.
+
+The migration is mechanical: change the return type, change `throw` to `return`. Nothing else changes.
+
 ## Installation
 
 ```
