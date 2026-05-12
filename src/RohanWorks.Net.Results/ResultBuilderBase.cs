@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 
 namespace RohanWorks.Net.Results;
@@ -51,6 +52,6 @@ public abstract class ResultBuilderBase<TResultType, TResponseType>
             throw null!;
         }
 
-        throw new InvalidOperationException("Result is in an unexpected state.");
+        throw new UnreachableException();
     }
 }
