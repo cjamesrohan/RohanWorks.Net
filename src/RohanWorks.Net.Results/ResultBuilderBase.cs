@@ -1,36 +1,55 @@
+using System.Runtime.ExceptionServices;
+
 namespace RohanWorks.Net.Results;
 
 public abstract class ResultBuilderBase<TResultType, TResponseType>
 {
-    private readonly Result<TResponseType> _instance;
-    private TResultType? _result;
+    private readonly Task<Result<TResponseType>> _task;
+    private readonly Func<TResponseType, TResultType> _onSuccess;
+    private readonly List<(Type ExType, Func<Exception, TResultType> Handler)> _handlers = [];
 
     protected ResultBuilderBase(Result<TResponseType> instance, Func<TResponseType, TResultType> onSuccess)
+        : this(Task.FromResult(instance), onSuccess) { }
+
+    protected ResultBuilderBase(Task<Result<TResponseType>> task, Func<TResponseType, TResultType> onSuccess)
     {
-        _instance = instance;
-        if (instance is { IsSuccess: true, Value: not null })
-        {
-            _result = onSuccess(instance.Value);
-        }
+        _task = task;
+        _onSuccess = onSuccess;
     }
 
     public ResultBuilderBase<TResultType, TResponseType> HandleException<TException>(
         Func<TException, TResultType> onFailure) where TException : Exception
     {
-        if (_instance is { IsSuccess: false, Exception: TException ex } && _result is null)
-        {
-            _result = onFailure(ex);
-        }
+        _handlers.Add((typeof(TException), ex => onFailure((TException)ex)));
         return this;
     }
 
-    public Task<TResultType> ReturnAsync()
-    {
-        if (_result is not null)
-            return Task.FromResult(_result);
+    public TResultType Return() => ReturnAsync().GetAwaiter().GetResult();
 
-        if (_instance.Exception is not null)
-            throw _instance.Exception;
+    public async Task<TResultType> ReturnAsync()
+    {
+        Result<TResponseType> instance;
+        try { instance = await _task.ConfigureAwait(false); }
+        catch (Exception ex) { instance = ex; }
+        return Dispatch(instance);
+    }
+
+    private TResultType Dispatch(Result<TResponseType> instance)
+    {
+        if (instance.IsSuccess)
+            return _onSuccess(instance.Value!);
+
+        if (instance.Exception is not null)
+        {
+            foreach (var (exType, handler) in _handlers)
+            {
+                if (exType.IsInstanceOfType(instance.Exception))
+                    return handler(instance.Exception);
+            }
+
+            ExceptionDispatchInfo.Capture(instance.Exception).Throw();
+            throw null!;
+        }
 
         throw new InvalidOperationException("Result is in an unexpected state.");
     }
