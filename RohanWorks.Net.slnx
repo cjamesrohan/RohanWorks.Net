@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/RohanWorks.Net.Sample.Api/RohanWorks.Net.Sample.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/RohanWorks.Net.Options.Validation/RohanWorks.Net.Options.Validation.csproj" />
+    <Project Path="src/RohanWorks.Net.Results/RohanWorks.Net.Results.csproj" />
+    <Project Path="src/RohanWorks.Net.Testing/RohanWorks.Net.Testing.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RohanWorks.Net.Options.Validation.Tests/RohanWorks.Net.Options.Validation.Tests.csproj" />
+    <Project Path="tests/RohanWorks.Net.Results.Tests/RohanWorks.Net.Results.Tests.csproj" />
+    <Project Path="tests/RohanWorks.Net.Testing.Tests/RohanWorks.Net.Testing.Tests.csproj" />
+  </Folder>
+</Solution>

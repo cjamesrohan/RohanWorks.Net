@@ -1,0 +1,6 @@
+@RohanWorks.Net.Sample.Api_HostAddress = http://localhost:5275
+
+GET {{RohanWorks.Net.Sample.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
