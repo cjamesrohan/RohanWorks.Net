@@ -17,6 +17,8 @@ public class LoggerAssertionsTests
         assertions.Should().BeOfType<LoggerAssertions<LoggerAssertionsTests>>();
     }
 
+    // ── Positive assertions ───────────────────────────────────────────────────
+
     [Fact]
     public void LogInformation_Passes_WhenLoggedWithSameMessage()
     {
@@ -35,21 +37,6 @@ public class LoggerAssertionsTests
     }
 
     [Fact]
-    public void NotLogInformation_Passes_WhenNotLogged()
-    {
-        _loggerMock.Should().NotLogInformation("Never logged");
-    }
-
-    [Fact]
-    public void NotLogInformation_Fails_WhenMessageWasLogged()
-    {
-        Logger.LogInformation("Was logged");
-
-        var act = () => _loggerMock.Should().NotLogInformation("Was logged");
-        act.Should().Throw<Exception>();
-    }
-
-    [Fact]
     public void LogError_WithException_Passes_WhenMatches()
     {
         var ex = new InvalidOperationException("boom");
@@ -64,7 +51,7 @@ public class LoggerAssertionsTests
         Logger.LogWarning("Watch out");
 
         _loggerMock.Should().LogWarning("Watch out");
-        // Should NOT pass for a different level
+
         var act = () => _loggerMock.Should().LogError("Watch out");
         act.Should().Throw<Exception>();
     }
@@ -84,5 +71,66 @@ public class LoggerAssertionsTests
         using var _ = Logger.BeginScope(scope);
 
         _loggerMock.Should().HaveScope(scope);
+    }
+
+    // ── Negation assertions ───────────────────────────────────────────────────
+
+    [Fact]
+    public void Not_LogInformation_Passes_WhenNotLogged()
+    {
+        _loggerMock.Should().Not.LogInformation("Never logged");
+    }
+
+    [Fact]
+    public void Not_LogInformation_Fails_WhenMessageWasLogged()
+    {
+        Logger.LogInformation("Was logged");
+
+        var act = () => _loggerMock.Should().Not.LogInformation("Was logged");
+        act.Should().Throw<Exception>();
+    }
+
+    [Fact]
+    public void Not_LogError_WithException_Passes_WhenNotLogged()
+    {
+        var ex = new InvalidOperationException("boom");
+        _loggerMock.Should().Not.LogError(ex, "Error occurred: {Msg}", "boom");
+    }
+
+    // ── WithCount ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void WithCount_Once_Passes_WhenLoggedExactlyOnce()
+    {
+        Logger.LogInformation("Once");
+
+        _loggerMock.Should().LogInformation("Once").WithCount(Times.Once());
+    }
+
+    [Fact]
+    public void WithCount_AtLeastOnce_Passes_WhenLoggedMultipleTimes()
+    {
+        Logger.LogInformation("Repeated");
+        Logger.LogInformation("Repeated");
+
+        _loggerMock.Should().LogInformation("Repeated").WithCount(Times.AtLeastOnce());
+    }
+
+    [Fact]
+    public void WithCount_Exactly_Passes_WhenLoggedCorrectCount()
+    {
+        Logger.LogInformation("Twice");
+        Logger.LogInformation("Twice");
+
+        _loggerMock.Should().LogInformation("Twice").WithCount(Times.Exactly(2));
+    }
+
+    [Fact]
+    public void WithCount_Exactly_Fails_WhenLoggedWrongCount()
+    {
+        Logger.LogInformation("Once");
+
+        var act = () => _loggerMock.Should().LogInformation("Once").WithCount(Times.Exactly(3));
+        act.Should().Throw<Exception>();
     }
 }

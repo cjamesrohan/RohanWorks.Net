@@ -21,130 +21,77 @@ public sealed class LoggerAssertions<T>
 {
     private readonly Mock<ILogger<T>> _instance;
 
-    public LoggerAssertions(Mock<ILogger<T>> instance)
-    {
-        _instance = instance;
-    }
+    public LoggerAssertions(Mock<ILogger<T>> instance) => _instance = instance;
+
+    public LoggerNegationAssertions<T> Not => new(_instance);
 
     #region LogDebug
-    public void LogDebug(string message, params object[] args) => Log(LogLevel.Debug, message, args);
-    public void LogDebug(EventId eventId, string message, params object[] args) => Log(LogLevel.Debug, eventId, message, args);
-    public void LogDebug(Exception exception, string message, params object[] args) => Log(LogLevel.Debug, exception, message, args);
-    public void LogDebug(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Debug, eventId, exception, message, args);
-    #endregion
-
-    #region NotLogDebug
-    public void NotLogDebug(string message, params object[] args) => NotLog(LogLevel.Debug, message, args);
-    public void NotLogDebug(EventId eventId, string message, params object[] args) => NotLog(LogLevel.Debug, eventId, message, args);
-    public void NotLogDebug(Exception exception, string message, params object[] args) => NotLog(LogLevel.Debug, exception, message, args);
-    public void NotLogDebug(EventId eventId, Exception? exception, string message, params object[] args) => NotLog(LogLevel.Debug, eventId, exception, message, args);
+    public LoggerAssertionChain<T> LogDebug(string message, params object[] args) => Log(LogLevel.Debug, message, args);
+    public LoggerAssertionChain<T> LogDebug(EventId eventId, string message, params object[] args) => Log(LogLevel.Debug, eventId, message, args);
+    public LoggerAssertionChain<T> LogDebug(Exception exception, string message, params object[] args) => Log(LogLevel.Debug, exception, message, args);
+    public LoggerAssertionChain<T> LogDebug(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Debug, eventId, exception, message, args);
     #endregion
 
     #region LogTrace
-    public void LogTrace(string message, params object[] args) => Log(LogLevel.Trace, message, args);
-    public void LogTrace(EventId eventId, string message, params object[] args) => Log(LogLevel.Trace, eventId, message, args);
-    public void LogTrace(Exception exception, string message, params object[] args) => Log(LogLevel.Trace, exception, message, args);
-    public void LogTrace(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Trace, eventId, exception, message, args);
-    #endregion
-
-    #region NotLogTrace
-    public void NotLogTrace(string message, params object[] args) => NotLog(LogLevel.Trace, message, args);
-    public void NotLogTrace(EventId eventId, string message, params object[] args) => NotLog(LogLevel.Trace, eventId, message, args);
-    public void NotLogTrace(Exception exception, string message, params object[] args) => NotLog(LogLevel.Trace, exception, message, args);
-    public void NotLogTrace(EventId eventId, Exception? exception, string message, params object[] args) => NotLog(LogLevel.Trace, eventId, exception, message, args);
+    public LoggerAssertionChain<T> LogTrace(string message, params object[] args) => Log(LogLevel.Trace, message, args);
+    public LoggerAssertionChain<T> LogTrace(EventId eventId, string message, params object[] args) => Log(LogLevel.Trace, eventId, message, args);
+    public LoggerAssertionChain<T> LogTrace(Exception exception, string message, params object[] args) => Log(LogLevel.Trace, exception, message, args);
+    public LoggerAssertionChain<T> LogTrace(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Trace, eventId, exception, message, args);
     #endregion
 
     #region LogInformation
-    public void LogInformation(string message, params object[] args) => Log(LogLevel.Information, message, args);
-    public void LogInformation(EventId eventId, string message, params object[] args) => Log(LogLevel.Information, eventId, message, args);
-    public void LogInformation(Exception exception, string message, params object[] args) => Log(LogLevel.Information, exception, message, args);
-    public void LogInformation(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Information, eventId, exception, message, args);
-    #endregion
-
-    #region NotLogInformation
-    public void NotLogInformation(string message, params object[] args) => NotLog(LogLevel.Information, message, args);
-    public void NotLogInformation(EventId eventId, string message, params object[] args) => NotLog(LogLevel.Information, eventId, message, args);
-    public void NotLogInformation(Exception exception, string message, params object[] args) => NotLog(LogLevel.Information, exception, message, args);
-    public void NotLogInformation(EventId eventId, Exception? exception, string message, params object[] args) => NotLog(LogLevel.Information, eventId, exception, message, args);
+    public LoggerAssertionChain<T> LogInformation(string message, params object[] args) => Log(LogLevel.Information, message, args);
+    public LoggerAssertionChain<T> LogInformation(EventId eventId, string message, params object[] args) => Log(LogLevel.Information, eventId, message, args);
+    public LoggerAssertionChain<T> LogInformation(Exception exception, string message, params object[] args) => Log(LogLevel.Information, exception, message, args);
+    public LoggerAssertionChain<T> LogInformation(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Information, eventId, exception, message, args);
     #endregion
 
     #region LogWarning
-    public void LogWarning(string message, params object[] args) => Log(LogLevel.Warning, message, args);
-    public void LogWarning(EventId eventId, string message, params object[] args) => Log(LogLevel.Warning, eventId, message, args);
-    public void LogWarning(Exception exception, string message, params object[] args) => Log(LogLevel.Warning, exception, message, args);
-    public void LogWarning(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Warning, eventId, exception, message, args);
-    #endregion
-
-    #region NotLogWarning
-    public void NotLogWarning(string message, params object[] args) => NotLog(LogLevel.Warning, message, args);
-    public void NotLogWarning(EventId eventId, string message, params object[] args) => NotLog(LogLevel.Warning, eventId, message, args);
-    public void NotLogWarning(Exception exception, string message, params object[] args) => NotLog(LogLevel.Warning, exception, message, args);
-    public void NotLogWarning(EventId eventId, Exception? exception, string message, params object[] args) => NotLog(LogLevel.Warning, eventId, exception, message, args);
+    public LoggerAssertionChain<T> LogWarning(string message, params object[] args) => Log(LogLevel.Warning, message, args);
+    public LoggerAssertionChain<T> LogWarning(EventId eventId, string message, params object[] args) => Log(LogLevel.Warning, eventId, message, args);
+    public LoggerAssertionChain<T> LogWarning(Exception exception, string message, params object[] args) => Log(LogLevel.Warning, exception, message, args);
+    public LoggerAssertionChain<T> LogWarning(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Warning, eventId, exception, message, args);
     #endregion
 
     #region LogError
-    public void LogError(string message, params object[] args) => Log(LogLevel.Error, message, args);
-    public void LogError(EventId eventId, string message, params object[] args) => Log(LogLevel.Error, eventId, message, args);
-    public void LogError(Exception exception, string message, params object[] args) => Log(LogLevel.Error, exception, message, args);
-    public void LogError(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Error, eventId, exception, message, args);
-    #endregion
-
-    #region NotLogError
-    public void NotLogError(string message, params object[] args) => NotLog(LogLevel.Error, message, args);
-    public void NotLogError(EventId eventId, string message, params object[] args) => NotLog(LogLevel.Error, eventId, message, args);
-    public void NotLogError(Exception exception, string message, params object[] args) => NotLog(LogLevel.Error, exception, message, args);
-    public void NotLogError(EventId eventId, Exception? exception, string message, params object[] args) => NotLog(LogLevel.Error, eventId, exception, message, args);
+    public LoggerAssertionChain<T> LogError(string message, params object[] args) => Log(LogLevel.Error, message, args);
+    public LoggerAssertionChain<T> LogError(EventId eventId, string message, params object[] args) => Log(LogLevel.Error, eventId, message, args);
+    public LoggerAssertionChain<T> LogError(Exception exception, string message, params object[] args) => Log(LogLevel.Error, exception, message, args);
+    public LoggerAssertionChain<T> LogError(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Error, eventId, exception, message, args);
     #endregion
 
     #region LogCritical
-    public void LogCritical(string message, params object[] args) => Log(LogLevel.Critical, message, args);
-    public void LogCritical(EventId eventId, string message, params object[] args) => Log(LogLevel.Critical, eventId, message, args);
-    public void LogCritical(Exception exception, string message, params object[] args) => Log(LogLevel.Critical, exception, message, args);
-    public void LogCritical(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Critical, eventId, exception, message, args);
-    #endregion
-
-    #region NotLogCritical
-    public void NotLogCritical(string message, params object[] args) => NotLog(LogLevel.Critical, message, args);
-    public void NotLogCritical(EventId eventId, string message, params object[] args) => NotLog(LogLevel.Critical, eventId, message, args);
-    public void NotLogCritical(Exception exception, string message, params object[] args) => NotLog(LogLevel.Critical, exception, message, args);
-    public void NotLogCritical(EventId eventId, Exception? exception, string message, params object[] args) => NotLog(LogLevel.Critical, eventId, exception, message, args);
+    public LoggerAssertionChain<T> LogCritical(string message, params object[] args) => Log(LogLevel.Critical, message, args);
+    public LoggerAssertionChain<T> LogCritical(EventId eventId, string message, params object[] args) => Log(LogLevel.Critical, eventId, message, args);
+    public LoggerAssertionChain<T> LogCritical(Exception exception, string message, params object[] args) => Log(LogLevel.Critical, exception, message, args);
+    public LoggerAssertionChain<T> LogCritical(EventId eventId, Exception? exception, string message, params object[] args) => Log(LogLevel.Critical, eventId, exception, message, args);
     #endregion
 
     #region Log
-    public void Log(LogLevel logLevel, string message, params object[] args) => Verify(Times.AtLeastOnce(), logLevel, 0, null, message, args);
-    public void Log(LogLevel logLevel, EventId eventId, string message, params object[] args) => Verify(Times.AtLeastOnce(), logLevel, eventId, null, message, args);
-    public void Log(LogLevel logLevel, Exception exception, string message, params object[] args) => Verify(Times.AtLeastOnce(), logLevel, 0, exception, message, args);
-    public void Log(LogLevel logLevel, EventId eventId, Exception? exception, string message, params object[] args) => Verify(Times.AtLeastOnce(), logLevel, eventId, exception, message, args);
-    #endregion
-
-    #region NotLog
-    public void NotLog(LogLevel logLevel, string message, params object[] args) => Verify(Times.Never(), logLevel, 0, null, message, args);
-    public void NotLog(LogLevel logLevel, EventId eventId, string message, params object[] args) => Verify(Times.Never(), logLevel, eventId, null, message, args);
-    public void NotLog(LogLevel logLevel, Exception exception, string message, params object[] args) => Verify(Times.Never(), logLevel, 0, exception, message, args);
-    public void NotLog(LogLevel logLevel, EventId eventId, Exception? exception, string message, params object[] args) => Verify(Times.Never(), logLevel, eventId, exception, message, args);
+    public LoggerAssertionChain<T> Log(LogLevel logLevel, string message, params object[] args) => Verify(logLevel, 0, null, message, args);
+    public LoggerAssertionChain<T> Log(LogLevel logLevel, EventId eventId, string message, params object[] args) => Verify(logLevel, eventId, null, message, args);
+    public LoggerAssertionChain<T> Log(LogLevel logLevel, Exception exception, string message, params object[] args) => Verify(logLevel, 0, exception, message, args);
+    public LoggerAssertionChain<T> Log(LogLevel logLevel, EventId eventId, Exception? exception, string message, params object[] args) => Verify(logLevel, eventId, exception, message, args);
     #endregion
 
     public void HaveScope<TState>(TState state) where TState : notnull
-    {
-        _instance.Verify(x => x.BeginScope(state), "Missing or mismatched scope");
-    }
+        => _instance.Verify(x => x.BeginScope(state), "Missing or mismatched scope");
 
-    private void Verify(Times times, LogLevel logLevel, EventId eventId, Exception? exception, string message, params object[] args)
+    private LoggerAssertionChain<T> Verify(LogLevel logLevel, EventId eventId, Exception? exception, string message, object[] args)
     {
         var formattedMessage = new FormattedLogValues(message, args).ToString();
-        var exceptionMessage = exception?.Message ?? "null";
 
-        _instance.Verify(x =>
-            x.Log(
+        _instance.Verify(
+            x => x.Log(
                 logLevel,
                 eventId,
                 It.Is<It.IsAnyType>((v, _) => v.ToString() == formattedMessage),
                 exception,
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, _) => true)
-            ),
-            times,
-            $"Expected log Times.{times}: Log(LogLevel.{logLevel}, {eventId}, {formattedMessage}, {exceptionMessage})"
-        );
+                It.Is<Func<It.IsAnyType, Exception?, string>>((v, _) => true)),
+            Times.AtLeastOnce(),
+            $"Expected log at least once: Log(LogLevel.{logLevel}, {eventId}, {formattedMessage}, {exception?.Message ?? "null"})");
+
+        return new LoggerAssertionChain<T>(_instance, logLevel, eventId, exception, formattedMessage);
     }
 }
 
@@ -162,7 +109,7 @@ internal class FormattedLogValues : IReadOnlyList<KeyValuePair<string, object>>
 
     public FormattedLogValues(string format, params object[]? values)
     {
-        if (values?.Length != 0 && format != null)
+        if (values?.Length > 0 && format != null)
         {
             if (_count >= MaxCachedFormatters)
             {
@@ -301,19 +248,16 @@ internal class LogValuesFormatter
 
     public string Format(object[] values)
     {
-        if (values != null)
+        var processedValues = values is null ? EmptyArray : (object[])values.Clone();
+        for (var i = 0; i < processedValues.Length; i++)
         {
-            for (var i = 0; i < values.Length; i++)
-            {
-                var value = values[i];
-                if (value is null) { values[i] = NullValue; continue; }
-                if (value is string) continue;
-                if (value is IEnumerable enumerable)
-                    values[i] = string.Join(", ", enumerable.Cast<object>().Select(o => o ?? NullValue));
-            }
+            var value = processedValues[i];
+            if (value is null) { processedValues[i] = NullValue; continue; }
+            if (value is string) continue;
+            if (value is IEnumerable enumerable)
+                processedValues[i] = string.Join(", ", enumerable.Cast<object>().Select(o => o ?? NullValue));
         }
-
-        return string.Format(CultureInfo.InvariantCulture, _format, values ?? EmptyArray);
+        return string.Format(CultureInfo.InvariantCulture, _format, processedValues);
     }
 
     public KeyValuePair<string, object> GetValue(object[] values, int index)
