@@ -34,9 +34,9 @@ public class OrderServiceTests
 
 ---
 
-## Verifying Log Output
+## Asserting Log Output
 
-Every log level has a matching assertion method:
+Every log level has a matching assertion method. The default verifies the message was logged **at least once**:
 
 ```csharp
 _logger.Should().LogDebug("Entering method");
@@ -47,44 +47,75 @@ _logger.Should().LogError("Failed to process order {Id}", orderId);
 _logger.Should().LogCritical("Service unavailable");
 ```
 
-## Verifying No Log Output
-
-Each level also has a negation:
-
-```csharp
-_logger.Should().NotLogError("anything");
-_logger.Should().NotLogWarning("Retry attempt {Count}", retryCount);
-```
-
----
-
-## EventId Overloads
-
-```csharp
-var eventId = new EventId(1001, "OrderProcessed");
-
-_logger.Should().LogInformation(eventId, "Order {Id} processed", orderId);
-```
-
-## Exception Overloads
+With an exception:
 
 ```csharp
 var ex = new InvalidOperationException("payment failed");
 
 _logger.Should().LogError(ex, "Order {Id} failed", orderId);
+```
+
+With an EventId:
+
+```csharp
+var eventId = new EventId(1001, "OrderProcessed");
+
+_logger.Should().LogInformation(eventId, "Order {Id} processed", orderId);
 _logger.Should().LogError(eventId, ex, "Order {Id} failed", orderId);
+```
+
+---
+
+## Asserting No Log Output
+
+Use `Should().Not` to assert a message was never logged:
+
+```csharp
+_logger.Should().Not.LogError("Order {Id} failed", orderId);
+_logger.Should().Not.LogWarning("Retry attempt {Count}", retryCount);
+```
+
+All the same overloads (exception, EventId, etc.) are available on `Not`.
+
+---
+
+## Asserting Exact Counts
+
+Chain `.WithCount(Times)` when you need to verify exactly how many times something was logged:
+
+```csharp
+// Logged exactly once
+_logger.Should().LogInformation("Order {Id} created", orderId).WithCount(Times.Once());
+
+// Logged a specific number of times
+_logger.Should().LogWarning("Retry attempt {Count}", retryCount).WithCount(Times.Exactly(3));
+
+// Logged at least once (explicit — same as the default)
+_logger.Should().LogInformation("Order {Id} created", orderId).WithCount(Times.AtLeastOnce());
+```
+
+---
+
+## Asserting Scopes
+
+```csharp
+var scope = new Dictionary<string, string> { { "CorrelationId", "abc-123" } };
+
+_logger.Should().HaveScope(scope);       // scope was begun
+_logger.Should().Not.HaveScope(scope);   // scope was NOT begun
 ```
 
 ---
 
 ## API Reference
 
-All methods follow the same pattern across six log levels (`Debug`, `Trace`, `Information`, `Warning`, `Error`, `Critical`):
-
-| Signature | Asserts |
+| Method | Description |
 |---|---|
-| `Log{Level}(message, args)` | Message was logged at the level |
-| `Log{Level}(eventId, message, args)` | Message was logged with a specific EventId |
-| `Log{Level}(exception, message, args)` | Message was logged with a specific exception |
-| `Log{Level}(eventId, exception, message, args)` | Message logged with both EventId and exception |
-| `NotLog{Level}(...)` | Negation of any of the above |
+| `Should().Log{Level}(message, args)` | Asserts message was logged at the given level (at least once) |
+| `Should().Log{Level}(exception, message, args)` | Includes exception matching |
+| `Should().Log{Level}(eventId, message, args)` | Includes EventId matching |
+| `Should().Log{Level}(eventId, exception, message, args)` | Includes both |
+| `Should().Not.Log{Level}(...)` | Asserts message was never logged — same overloads as above |
+| `.WithCount(Times)` | Chains off any positive assertion to verify exact count |
+| `Should().HaveScope(state)` | Asserts `BeginScope` was called with the given state |
+| `Should().Not.HaveScope(state)` | Asserts `BeginScope` was NOT called with the given state |
