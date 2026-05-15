@@ -20,7 +20,7 @@ var weatherOptions = services.ConfigureAndGet<WeatherOptions>(builder.Configurat
 
 services.AddHealthChecks()
     .AddCheck("weather-config", new ConfigOptionsHealthCheck<WeatherOptions>(
-        builder.Configuration, "WeatherOptions"));
+        builder.Configuration.GetSection("WeatherOptions")));
 ```
 
 ---
@@ -55,7 +55,7 @@ Instead of throwing on startup, validate config at runtime through ASP.NET Core'
 ```csharp
 services.AddHealthChecks()
     .AddCheck("weather-config", new ConfigOptionsHealthCheck<WeatherOptions>(
-        configuration, "WeatherOptions"));
+        configuration.GetSection("WeatherOptions")));
 ```
 
 ### DataAnnotations (default)
@@ -88,7 +88,7 @@ Pass a validator to use FluentValidation instead of DataAnnotations:
 ```csharp
 services.AddHealthChecks()
     .AddCheck("weather-config", new ConfigOptionsHealthCheck<WeatherOptions>(
-        configuration, "WeatherOptions", new WeatherOptionsValidator()));
+        configuration.GetSection("WeatherOptions"), new WeatherOptionsValidator()));
 ```
 
 ```csharp
@@ -133,6 +133,6 @@ Same validation logic as the attribute, available as a FluentValidation rule.
 |---|---|
 | `services.ConfigureAndGet<T>(config)` | Binds section named after `T`, registers `IOptions<T>`, returns bound `T` |
 | `services.ConfigureAndGet<T>(section)` | Same with an explicit `IConfigurationSection` |
-| `new ConfigOptionsHealthCheck<T>(config, sectionKey?, validator?)` | Health check that validates config at runtime |
+| `new ConfigOptionsHealthCheck<T>(section, validator?)` | Health check that validates config at runtime |
 | `[HttpUrl]` | DataAnnotations attribute — validates http/https URL |
 | `.HttpUrl()` | FluentValidation rule — same validation as `[HttpUrl]` |
