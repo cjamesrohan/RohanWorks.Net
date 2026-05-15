@@ -7,17 +7,14 @@ namespace RohanWorks.Net.Options.Validation;
 
 public class ConfigOptionsHealthCheck<T> : IHealthCheck where T : class
 {
-    private readonly IConfiguration _configuration;
-    private readonly string _sectionKey;
+    private readonly IConfigurationSection _section;
     private readonly AbstractValidator<T>? _fluentValidator;
 
     public ConfigOptionsHealthCheck(
-        IConfiguration configuration,
-        string? sectionKey = null,
+        IConfigurationSection section,
         AbstractValidator<T>? fluentValidator = null)
     {
-        _configuration = configuration;
-        _sectionKey = sectionKey ?? typeof(T).Name;
+        _section = section;
         _fluentValidator = fluentValidator;
     }
 
@@ -25,13 +22,12 @@ public class ConfigOptionsHealthCheck<T> : IHealthCheck where T : class
         HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
-        var section = _configuration.GetSection(_sectionKey);
-        if (!section.Exists())
-            return Task.FromResult(HealthCheckResult.Unhealthy($"Configuration section '{_sectionKey}' is missing."));
+        if (!_section.Exists())
+            return Task.FromResult(HealthCheckResult.Unhealthy($"Configuration section '{_section.Path}' is missing."));
 
-        var instance = section.Get<T>();
+        var instance = _section.Get<T>();
         if (instance is null)
-            return Task.FromResult(HealthCheckResult.Unhealthy($"Failed to bind configuration section '{_sectionKey}' to {typeof(T).Name}."));
+            return Task.FromResult(HealthCheckResult.Unhealthy($"Failed to bind configuration section '{_section.Path}' to {typeof(T).Name}."));
 
         List<string> errorMessages;
 
@@ -48,8 +44,8 @@ public class ConfigOptionsHealthCheck<T> : IHealthCheck where T : class
         }
 
         return Task.FromResult(errorMessages.Count > 0
-            ? HealthCheckResult.Unhealthy($"Configuration section '{_sectionKey}' is invalid. {string.Join(", ", errorMessages)}")
-            : HealthCheckResult.Healthy($"Configuration section '{_sectionKey}' is correctly configured."));
+            ? HealthCheckResult.Unhealthy($"Configuration section '{_section.Path}' is invalid. {string.Join(", ", errorMessages)}")
+            : HealthCheckResult.Healthy($"Configuration section '{_section.Path}' is correctly configured."));
     }
 
     private static List<string> GetValidationErrors(object instance)

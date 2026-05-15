@@ -23,7 +23,7 @@ public class ConfigOptionsHealthCheckTests
             ["WeatherOptions:Url"] = "https://example.com"
         });
 
-        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config, "WeatherOptions");
+        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config.GetSection("WeatherOptions"));
         var result = await check.CheckHealthAsync(FakeContext());
 
         result.Status.Should().Be(HealthStatus.Healthy);
@@ -34,7 +34,7 @@ public class ConfigOptionsHealthCheckTests
     {
         var config = BuildConfig(new());
 
-        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config, "WeatherOptions");
+        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config.GetSection("WeatherOptions"));
         var result = await check.CheckHealthAsync(FakeContext());
 
         result.Status.Should().Be(HealthStatus.Unhealthy);
@@ -49,7 +49,7 @@ public class ConfigOptionsHealthCheckTests
             ["WeatherOptions:Url"] = "not-a-url"
         });
 
-        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config, "WeatherOptions");
+        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config.GetSection("WeatherOptions"));
         var result = await check.CheckHealthAsync(FakeContext());
 
         result.Status.Should().Be(HealthStatus.Unhealthy);
@@ -64,7 +64,7 @@ public class ConfigOptionsHealthCheckTests
             ["ParentOptions:Child:Name"] = null
         });
 
-        var check = new ConfigOptionsHealthCheck<ParentOptions>(config, "ParentOptions");
+        var check = new ConfigOptionsHealthCheck<ParentOptions>(config.GetSection("ParentOptions"));
         var result = await check.CheckHealthAsync(FakeContext());
 
         result.Status.Should().Be(HealthStatus.Unhealthy);
@@ -79,7 +79,7 @@ public class ConfigOptionsHealthCheckTests
             ["WeatherOptions:Url"] = "https://example.com"
         });
 
-        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config, "WeatherOptions", new WeatherOptionsValidator());
+        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config.GetSection("WeatherOptions"), new WeatherOptionsValidator());
         var result = await check.CheckHealthAsync(FakeContext());
 
         result.Status.Should().Be(HealthStatus.Healthy);
@@ -93,24 +93,10 @@ public class ConfigOptionsHealthCheckTests
             ["WeatherOptions:Url"] = "not-a-url"
         });
 
-        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config, "WeatherOptions", new WeatherOptionsValidator());
+        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config.GetSection("WeatherOptions"), new WeatherOptionsValidator());
         var result = await check.CheckHealthAsync(FakeContext());
 
         result.Status.Should().Be(HealthStatus.Unhealthy);
-    }
-
-    [Fact]
-    public async Task CheckHealth_DefaultSectionKey_UsesTypeName()
-    {
-        var config = BuildConfig(new()
-        {
-            ["WeatherOptions:Url"] = "https://example.com"
-        });
-
-        var check = new ConfigOptionsHealthCheck<WeatherOptions>(config);
-        var result = await check.CheckHealthAsync(FakeContext());
-
-        result.Status.Should().Be(HealthStatus.Healthy);
     }
 
     private class WeatherOptions

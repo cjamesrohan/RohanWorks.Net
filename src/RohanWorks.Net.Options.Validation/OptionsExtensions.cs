@@ -28,4 +28,5 @@ public static class OptionsExtensions
         services.Configure<T>(configSection);
         return configSection.Get<T>() ?? new T();
     }
+
 }

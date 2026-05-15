@@ -14,15 +14,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IWeatherDomain, WeatherDomain>();
 
-// Bind and register WeatherOptions — chain .Validate() to fail fast at startup
-// if the config section is missing or invalid.
-builder.Services
-    .ConfigureAndGet<WeatherOptions>(builder.Configuration)
-    .Validate();
+builder.Services.ConfigureAndGet<WeatherOptions>(builder.Configuration);
 
 // Health check — validates WeatherOptions via DataAnnotations on every /health call.
 builder.Services.AddHealthChecks()
-    .AddCheck("weather-options", new ConfigOptionsHealthCheck<WeatherOptions>(builder.Configuration));
+    .AddCheck("weather-options", new ConfigOptionsHealthCheck<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions")));
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 
