@@ -6,10 +6,10 @@ namespace RohanWorks.Net.Options.Validation;
 public static class OptionsExtensions
 {
     /// <summary>
-    /// Binds configuration section named after <typeparamref name="T"/> and registers it with the DI container.
-    /// Chain <see cref="ConfigResultExtensions.Validate{T}"/> to enforce startup validation.
+    /// Binds the configuration section named after <typeparamref name="T"/>, registers it with the DI container,
+    /// and returns the bound options instance for use at registration time.
     /// </summary>
-    public static ConfigResult<T> ConfigureAndGet<T>(
+    public static T ConfigureAndGet<T>(
         this IServiceCollection services,
         IConfiguration config) where T : class, new()
     {
@@ -18,14 +18,14 @@ public static class OptionsExtensions
     }
 
     /// <summary>
-    /// Binds an explicit configuration section and registers it with the DI container.
-    /// Chain <see cref="ConfigResultExtensions.Validate{T}"/> to enforce startup validation.
+    /// Binds an explicit configuration section, registers it with the DI container,
+    /// and returns the bound options instance for use at registration time.
     /// </summary>
-    public static ConfigResult<T> ConfigureAndGet<T>(
+    public static T ConfigureAndGet<T>(
         this IServiceCollection services,
         IConfigurationSection configSection) where T : class, new()
     {
         services.Configure<T>(configSection);
-        return new ConfigResult<T>(configSection);
+        return configSection.Get<T>() ?? new T();
     }
 }

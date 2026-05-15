@@ -5,13 +5,7 @@ namespace RohanWorks.Net.Options.Validation.FluentValidation;
 
 public class HttpUrlValidator<T, TProperty> : PropertyValidator<T, TProperty>
 {
-    private readonly string _propertyName;
     public override string Name => "HttpUrlValidator";
-
-    public HttpUrlValidator(string propertyName)
-    {
-        _propertyName = propertyName;
-    }
 
     public override bool IsValid(ValidationContext<T> context, TProperty value)
     {
@@ -23,5 +17,5 @@ public class HttpUrlValidator<T, TProperty> : PropertyValidator<T, TProperty>
     }
 
     protected override string GetDefaultMessageTemplate(string errorCode)
-        => $"The {_propertyName} field is not a valid fully-qualified http or https URL.";
+        => "'{PropertyName}' is not a valid fully-qualified http or https URL.";
 }

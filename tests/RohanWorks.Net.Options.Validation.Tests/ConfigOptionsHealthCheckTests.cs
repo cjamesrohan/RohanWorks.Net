@@ -56,7 +56,23 @@ public class ConfigOptionsHealthCheckTests
     }
 
     [Fact]
-    public async Task CheckHealth_WithFluentValidator_UsesFluentValidation()
+    public async Task CheckHealth_NestedObjectInvalid_ReturnsUnhealthy()
+    {
+        var config = BuildConfig(new()
+        {
+            ["ParentOptions:Url"] = "https://example.com",
+            ["ParentOptions:Child:Name"] = null
+        });
+
+        var check = new ConfigOptionsHealthCheck<ParentOptions>(config, "ParentOptions");
+        var result = await check.CheckHealthAsync(FakeContext());
+
+        result.Status.Should().Be(HealthStatus.Unhealthy);
+        result.Description.Should().Contain("Child");
+    }
+
+    [Fact]
+    public async Task CheckHealth_WithFluentValidator_ValidConfig_ReturnsHealthy()
     {
         var config = BuildConfig(new()
         {
@@ -91,7 +107,6 @@ public class ConfigOptionsHealthCheckTests
             ["WeatherOptions:Url"] = "https://example.com"
         });
 
-        // No sectionKey passed — should default to "WeatherOptions"
         var check = new ConfigOptionsHealthCheck<WeatherOptions>(config);
         var result = await check.CheckHealthAsync(FakeContext());
 
@@ -105,11 +120,25 @@ public class ConfigOptionsHealthCheckTests
         public string? Url { get; set; }
     }
 
+    private class ParentOptions
+    {
+        [Required]
+        [HttpUrl]
+        public string? Url { get; set; }
+
+        public ChildOptions? Child { get; set; }
+    }
+
+    private class ChildOptions
+    {
+        [Required] public string? Name { get; set; }
+    }
+
     private class WeatherOptionsValidator : AbstractValidator<WeatherOptions>
     {
         public WeatherOptionsValidator()
         {
-            RuleFor(x => x.Url).NotEmpty().HttpUrl(nameof(WeatherOptions.Url));
+            RuleFor(x => x.Url).NotEmpty().HttpUrl();
         }
     }
 }

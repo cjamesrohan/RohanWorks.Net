@@ -1,6 +1,6 @@
 # RohanWorks.Net.Options.Validation
 
-Startup configuration validation for ASP.NET Core. Bind a configuration section, validate it with DataAnnotations (including nested objects), and fail fast at startup — or integrate with health checks for runtime monitoring.
+Configuration binding helpers and health check validation for ASP.NET Core. Bind options at startup, validate them at runtime via health checks — not by throwing on boot.
 
 ## Installation
 
@@ -8,83 +8,66 @@ Startup configuration validation for ASP.NET Core. Bind a configuration section,
 dotnet add package RohanWorks.Net.Options.Validation
 ```
 
+Requires `FluentValidation` (included as a dependency — no separate install needed).
+
+---
+
 ## Quick Start
 
-**Define your options class with DataAnnotations:**
-
 ```csharp
-public class PaymentOptions
-{
-    [Required]
-    [Url]
-    public string? BaseUrl { get; set; }
+// Program.cs
+var weatherOptions = services.ConfigureAndGet<WeatherOptions>(builder.Configuration);
 
-    [Required]
-    public string? ApiKey { get; set; }
-
-    [Range(1, 30)]
-    public int TimeoutSeconds { get; set; } = 10;
-}
-```
-
-**Bind and validate at startup — fails immediately if config is missing or invalid:**
-
-```csharp
-builder.Services
-    .ConfigureAndGet<PaymentOptions>(builder.Configuration)
-    .Validate();
-```
-
-By default, `ConfigureAndGet` looks for a section named after the type (`PaymentOptions`). Pass a section explicitly if yours differs:
-
-```csharp
-builder.Services
-    .ConfigureAndGet<PaymentOptions>(builder.Configuration.GetSection("Payment"))
-    .Validate();
+services.AddHealthChecks()
+    .AddCheck("weather-config", new ConfigOptionsHealthCheck<WeatherOptions>(
+        builder.Configuration, "WeatherOptions"));
 ```
 
 ---
 
-## Health Check Integration
+## Binding Options — `ConfigureAndGet<T>`
 
-Validate options on every `/health` call — catches configuration drift at runtime:
+Binds a configuration section, registers `IOptions<T>` in the DI container, and returns the bound instance for use at registration time.
 
 ```csharp
-builder.Services.AddHealthChecks()
-    .AddCheck("payment-options", new ConfigOptionsHealthCheck<PaymentOptions>(builder.Configuration));
+// Binds config section named after the type ("WeatherOptions")
+var opts = services.ConfigureAndGet<WeatherOptions>(config);
 
-app.MapHealthChecks("/health");
+// Or with an explicit section
+var opts = services.ConfigureAndGet<WeatherOptions>(config.GetSection("Weather"));
 ```
 
-The health check reports `Unhealthy` if the section is missing or any DataAnnotation fails.
+The returned `T` is useful when you need the options value during service registration — for example, passing a connection string to `AddDbContext`:
+
+```csharp
+var dbOptions = services.ConfigureAndGet<DatabaseOptions>(config);
+services.AddDbContext<AppDbContext>(o => o.UseSqlServer(dbOptions.ConnectionString));
+```
+
+`IOptions<T>` is still registered in DI, so constructor injection works as normal everywhere else.
 
 ---
 
-## Manual Validation
+## Validating Config — `ConfigOptionsHealthCheck<T>`
 
-Use `TryValidate` when you need the errors without throwing:
+Instead of throwing on startup, validate config at runtime through ASP.NET Core's health check system. Unhealthy = misconfigured = your monitoring/alerting catches it.
 
 ```csharp
-var result = services.ConfigureAndGet<PaymentOptions>(config);
-
-if (!result.TryValidate(out var errors))
-{
-    foreach (var error in errors)
-        logger.LogWarning("Config issue: {Error}", error);
-}
+services.AddHealthChecks()
+    .AddCheck("weather-config", new ConfigOptionsHealthCheck<WeatherOptions>(
+        configuration, "WeatherOptions"));
 ```
 
----
+### DataAnnotations (default)
 
-## Nested Object Validation
-
-Validation recurses into nested class properties automatically:
+Decorate your options class and `ConfigOptionsHealthCheck` validates automatically, including nested objects:
 
 ```csharp
-public class ServiceOptions
+public class WeatherOptions
 {
     [Required]
-    public string? Name { get; set; }
+    [HttpUrl]
+    public string? ApiUrl { get; set; }
 
     public RetryOptions? Retry { get; set; }
 }
@@ -93,22 +76,63 @@ public class RetryOptions
 {
     [Range(1, 10)]
     public int MaxAttempts { get; set; } = 3;
-
-    [Range(100, 5000)]
-    public int DelayMs { get; set; } = 500;
 }
 ```
 
-Both `ServiceOptions` and `RetryOptions` are validated in a single `Validate()` call.
+Nested object failures appear in the health check description (`The WeatherOptions.RetryOptions object is invalid: ...`).
+
+### FluentValidation
+
+Pass a validator to use FluentValidation instead of DataAnnotations:
+
+```csharp
+services.AddHealthChecks()
+    .AddCheck("weather-config", new ConfigOptionsHealthCheck<WeatherOptions>(
+        configuration, "WeatherOptions", new WeatherOptionsValidator()));
+```
+
+```csharp
+public class WeatherOptionsValidator : AbstractValidator<WeatherOptions>
+{
+    public WeatherOptionsValidator()
+    {
+        RuleFor(x => x.ApiUrl).NotEmpty().HttpUrl();
+    }
+}
+```
+
+---
+
+## Validation Attributes
+
+### `[HttpUrl]`
+
+Validates that a string property is a well-formed absolute HTTP or HTTPS URL.
+
+```csharp
+[Required]
+[HttpUrl]
+public string? ApiUrl { get; set; }
+```
+
+Accepts `null` (use `[Required]` to reject null). Rejects relative URLs, non-HTTP schemes, and malformed strings.
+
+### `HttpUrl()` — FluentValidation
+
+```csharp
+RuleFor(x => x.ApiUrl).NotEmpty().HttpUrl();
+```
+
+Same validation logic as the attribute, available as a FluentValidation rule.
 
 ---
 
 ## API Reference
 
-| Method | Description |
+| Member | Description |
 |---|---|
-| `services.ConfigureAndGet<T>(config)` | Binds section named after `T`, registers with DI, returns `ConfigResult<T>` |
-| `services.ConfigureAndGet<T>(configSection)` | Binds an explicit section |
-| `configResult.Validate()` | Throws `ValidationException` if section is missing or invalid. Chainable. |
-| `configResult.TryValidate(out errors)` | Returns `false` and populates error messages without throwing |
-| `configResult.Options` | Accesses the bound options instance. Re-binds on each access to reflect live config. |
+| `services.ConfigureAndGet<T>(config)` | Binds section named after `T`, registers `IOptions<T>`, returns bound `T` |
+| `services.ConfigureAndGet<T>(section)` | Same with an explicit `IConfigurationSection` |
+| `new ConfigOptionsHealthCheck<T>(config, sectionKey?, validator?)` | Health check that validates config at runtime |
+| `[HttpUrl]` | DataAnnotations attribute — validates http/https URL |
+| `.HttpUrl()` | FluentValidation rule — same validation as `[HttpUrl]` |

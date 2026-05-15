@@ -9,7 +9,7 @@
     <PackageId>RohanWorks.Net.Options.Validation</PackageId>
     <Version>1.0.0</Version>
     <Authors>Coty Rohan</Authors>
-    <Description>Configuration validation for ASP.NET Core — bind and validate options via DataAnnotations or FluentValidation, with recursive nested-object validation and health check integration.</Description>
+    <Description>Configuration binding helpers and health check validation for ASP.NET Core. Bind options at startup with ConfigureAndGet, validate at runtime via ConfigOptionsHealthCheck with DataAnnotations or FluentValidation.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/RohanWorks/RohanWorks.Net</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
